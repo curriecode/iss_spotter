@@ -4,9 +4,7 @@ const request = require('request');
 
 const fetchMyIP = (callback) => {
   request('https://api.ipify.org?format=json', (err, response, body) => {
-    if (err) {
-      throw new Error("woops something is wrong with the request");
-    }
+
     if (err) return callback(err, null);
 
     if (response.statusCode !== 200) {
@@ -38,7 +36,28 @@ const fetchCoordsByIP = (ip, callback) => {
 };
 
 
+const fetchISSFlyOverTimes = function (coords, callback) {
+  const url = `http://api.open-notify.org/iss-pass.json?lat=${coords.latitude}&lon=${coords.longitude}`;
+
+  request(url, (error, response, body) => {
+    if (error) {
+      callback(error, null);
+      return;
+    }
+
+    if (response.statusCode !== 200) {
+      callback(Error(`Status Code ${response.statusCode} when fetching ISS pass times: ${body}`), null);
+      return;
+    }
+
+    const passes = JSON.parse(body).response;
+    callback(null, passes);
+  });
+};
+
+
 module.exports = {
   fetchMyIP,
-  fetchCoordsByIP
+  fetchCoordsByIP,
+  fetchISSFlyOverTimes
 };
