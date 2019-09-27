@@ -1,5 +1,3 @@
-// It will contain most of the logic for fetching the data from each API endpoint.
-// const args = process.argv.slice(2);
 const request = require('request');
 
 const fetchMyIP = (callback) => {
@@ -36,12 +34,12 @@ const fetchCoordsByIP = (ip, callback) => {
 };
 
 
-const fetchISSFlyOverTimes = function (coords, callback) {
+const fetchISSFlyOverTimes = (coords, callback) => {
   const url = `http://api.open-notify.org/iss-pass.json?lat=${coords.latitude}&lon=${coords.longitude}`;
 
-  request(url, (error, response, body) => {
-    if (error) {
-      callback(error, null);
+  request(url, (err, response, body) => {
+    if (err) {
+      callback(err, null);
       return;
     }
 
@@ -56,8 +54,32 @@ const fetchISSFlyOverTimes = function (coords, callback) {
 };
 
 
+
+
+const nextISSTimesForMyLocation = function (callback) {
+  fetchMyIP((err, ip) => {
+    if (err) {
+      return callback(err, null);
+    }
+
+    fetchCoordsByIP(ip, (err, loc) => {
+      if (err) {
+        return callback(err, null);
+      }
+
+      fetchISSFlyOverTimes(loc, (err, nextPasses) => {
+        if (err) {
+          return callback(err, null);
+        }
+
+        callback(null, nextPasses);
+      });
+    });
+  });
+};
+
+
+
 module.exports = {
-  fetchMyIP,
-  fetchCoordsByIP,
-  fetchISSFlyOverTimes
+  nextISSTimesForMyLocation
 };
